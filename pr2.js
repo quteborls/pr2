@@ -9,77 +9,72 @@ const categories = ["телефон", "ноутбук", "наушники", "т�
 const discounts = [10, 0, 15, 5, 20, 0, 10];
 
 // =====================================================
-// 1. Перебор массива (forEach)
+// 1. Группировка товаров по категориям
 // =====================================================
-prices.forEach(price => {
-  console.log(`Цена товара: ${price} ₽`);
+const groupedByCategory = categories.reduce((result, category, index) => {
+    if (!result[category]) {
+        result[category] = [];
+    }
+    result[category].push({
+        price: prices[index],
+        discount: discounts[index] || 0
+    });
+    return result;
+}, {});
+
+console.log("Товары по категориям:", groupedByCategory);
+
+// =====================================================
+// 2. Расчет средней цены по категориям
+// =====================================================
+const averagePriceByCategory = Object.entries(groupedByCategory).reduce((result, [category, items]) => {
+    const total = items.reduce((sum, item) => sum + item.price, 0);
+    result[category] = total / items.length;
+    return result;
+}, {});
+
+console.log("Средняя цена по категориям:", averagePriceByCategory);
+
+// =====================================================
+// 3. Создание массива объектов товаров
+// =====================================================
+const products = prices.map((price, index) => ({
+    price: price,
+    category: categories[index],
+    discount: discounts[index] || 0
+}));
+
+console.log("Массив объектов товаров:", products);
+
+// =====================================================
+// 4. Фильтрация дорогих товаров с учетом скидки
+// =====================================================
+const expensiveDiscounted = products
+    .filter(product => product.price > 2000)
+    .map(product => ({
+        ...product,
+        priceWithDiscount: product.price - (product.price * product.discount) / 100
+    }));
+
+console.log("Дорогие товары со скидкой:", expensiveDiscounted);
+
+// =====================================================
+// 5. Сортировка по цене со скидкой
+// =====================================================
+const sortedByDiscountedPrice = [...products].sort((a, b) => {
+    const priceA = a.price - (a.price * a.discount) / 100;
+    const priceB = b.price - (b.price * b.discount) / 100;
+    return priceA - priceB;
 });
 
-// =====================================================
-// 2. Преобразование массива (map)
-// =====================================================
-const pricesWithDiscount = prices.map((price, index) => {
-  const discount = discounts[index] ?? 0;
-  return price - (price * discount) / 100;
-});
-
-console.log("Цены со скидкой:", pricesWithDiscount);
+console.log("Сортировка по цене со скидкой:", sortedByDiscountedPrice);
 
 // =====================================================
-// 3. Фильтрация массива (filter)
+// 6. Подсчет общей суммы со скидкой
 // =====================================================
-const expensivePrices = prices.filter(price => price > 2000);
+const totalWithDiscount = products.reduce((sum, product) => {
+    const discountedPrice = product.price - (product.price * product.discount) / 100;
+    return sum + discountedPrice;
+}, 0);
 
-console.log("Дорогие товары:", expensivePrices);
-
-// =====================================================
-// 4. Поиск элемента (find)
-// =====================================================
-const firstVeryExpensive = prices.find(price => price > 4000);
-
-console.log("Первая цена больше 4000:", firstVeryExpensive);
-
-// =====================================================
-// 5. Проверка условий (some, every)
-// =====================================================
-const hasCheapProducts = prices.some(price => price < 1000);
-const allPricesPositive = prices.every(price => price > 0);
-
-console.log("Есть ли дешёвые товары:", hasCheapProducts);
-console.log("Все ли цены положительные:", allPricesPositive);
-
-// =====================================================
-// 6. Сортировка массива (sort)
-// =====================================================
-const sortedPrices = [...prices].sort((a, b) => a - b);
-
-console.log("Отсортированные цены:", sortedPrices);
-
-// =====================================================
-// 7. Работа с несколькими массивами (reduce)
-// =====================================================
-const totalPrice = prices.reduce((sum, price) => sum + price, 0);
-
-console.log("Общая стоимость:", totalPrice);
-
-// =====================================================
-// 8. Работа со строками в массиве
-// =====================================================
-const uniqueCategories = categories.reduce((result, category) => {
-  if (!result.includes(category)) {
-    result.push(category);
-  }
-  return result;
-}, []);
-
-console.log("Уникальные категории:", uniqueCategories);
-
-// =====================================================
-// 9. Дополнительное задание
-// =====================================================
-prices.pop();        // удалить последний элемент
-prices.push(1800);   // добавить новую цену
-
-const categoriesCopy = [...categories];
-
-console.log("Копия категорий:", categoriesCopy);
+console.log("Общая сумма со скидкой:", totalWithDiscount);
